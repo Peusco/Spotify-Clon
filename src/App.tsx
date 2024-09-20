@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 import { type Token, Artist } from "./types/Types";
+import { type Playlist, Item } from "./types/Playlist";
 
 const CLIENT_ID = "97362199d7f74269bdb541165bb7fdd0";
 const URI = "http://localhost:5173/";
@@ -8,7 +9,7 @@ const CLIENT_SECRET = "d4d7413c59c040aa823025b12655650c";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("access_token"));
-  const [artist, setArtis] = useState({});
+  const [playlist, setPlaylist] = useState<Playlist>();
   const SPOTIFY_URL = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${URI}`;
 
   const autenticateUser = async () => {
@@ -37,7 +38,7 @@ function App() {
 
   const handleArtist = async () => {
     const response = await fetch(
-      "https://api.spotify.com/v1/artists/4ShgdWtm52xvEr8uYmT0V6?si=X7YS7FGoSryLLdyKT8JjDA",
+      "https://api.spotify.com/v1/playlists/3cEYpjA9oz9GiPac4AsH4n",
       {
         method: "GET",
         headers: {
@@ -46,8 +47,19 @@ function App() {
       }
     );
 
-    const data: Artist = await response.json();
-    console.log(data.name);
+    const data: Playlist = await response.json();
+    setPlaylist(data);
+  };
+
+  const trackList = () => {
+    if (playlist == undefined) return;
+    return (
+      <ul>
+        {playlist.tracks.items.map((song: Item) => {
+          return <li key={song.track.id}>{song.track.name}</li>;
+        })}
+      </ul>
+    );
   };
 
   return (
@@ -55,10 +67,11 @@ function App() {
       <div>
         <button onClick={handleClick}>Login</button>
         {token != "" ? (
-          <button onClick={handleArtist}>Get Artist</button>
+          <button onClick={handleArtist}>Get Playlist</button>
         ) : (
           "No hay Token"
         )}
+        {playlist ? trackList() : "No"}
       </div>
     </>
   );
